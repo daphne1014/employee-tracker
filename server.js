@@ -3,7 +3,7 @@ const inquirer = require('inquirer');
 const cTable = require('console.table');
 
 
-// Start server after DB connection
+// promptMain server after DB connection
 db.connect(err => {
   if (err) throw err;
   console.log('Database connected.');
@@ -24,22 +24,22 @@ const promptMain = () => {
       'Remove an Employee',
       'Update an Employee Role']
   })
-    .then((answers) => {
-      if (answers.main === 'View All Departments') {
+    .then((answer) => {
+      if (answer.main === 'View All Departments') {
         viewDept();
-      } else if (answers.main === 'View All Roles') {
+      } else if (answer.main === 'View All Roles') {
         viewRole();
-      } else if (answers.main === 'View All Employees') {
+      } else if (answer.main === 'View All Employees') {
         viewEmployee();
-      } else if (answers.main === 'Add a Department') {
+      } else if (answer.main === 'Add a Department') {
         addDept();
-      } else if (answers.main === 'Add a Role') {
+      } else if (answer.main === 'Add a Role') {
         addRole();
-      } else if (answers.main === 'Add an Employee') {
+      } else if (answer.main === 'Add an Employee') {
         addEmployee();
-      } else if (answers.main === 'Remove an Employee') {
+      } else if (answer.main === 'Remove an Employee') {
         removeEmployee();
-      } else if (answers.main === 'Update an Employee Role') {
+      } else if (answer.main === 'Update an Employee Role') {
         updateEmployee();
       }
     })
@@ -56,7 +56,7 @@ const viewDept = () => {
       return;
     }
     console.table(results);
-    start();
+    promptMain();
   });
 };
 
@@ -73,7 +73,7 @@ const viewRole = () => {
       return;
     }
     console.table(results);
-    start();
+    promptMain();
   });
 }
 
@@ -85,18 +85,18 @@ const viewEmployee = () => {
   -> FROM employee e
   -> JOIN role ON e.role_id=role.id
   -> JOIN department on role.department_id = department.id
-  -> JOIN employee m ON m.id = e.manager_id`;
+  -> JOIN employee m ON m.id = e.manager_id;`;
   db.query(sql, (err, results) => {
     if (err) {
       res.status(500).json({ error: err.message });
       return;
     }
     console.table(results);
-    start();
+    promptMain();
   });
 };
 
-// //Add a department
+//Add a department
 
 const addDept = () => {
   inquirer.prompt({
@@ -104,9 +104,9 @@ const addDept = () => {
     type: "input",
     message: "What is the name of department you want to add?"
   })
-    .then((answers) => {
+    .then((answer) => {
       const sql = `INSERT INTO department(name) VALUES(?)`;
-      db.query(sql, answers.department, (err, results) => {
+      db.query(sql, answer.department, (err, results) => {
         if (err) {
           res.status(500).json({ error: err.message });
           return;
@@ -117,10 +117,170 @@ const addDept = () => {
     )
 };
 
+// Add a Role
 
-// //Add an employee
+const addRole = () => {
+  inquirer.prompt([{
+    name: "title",
+    type: "input",
+    message: "What role would you like to add?",
+    validate: answer => {
+      if (answer.length < 1) {
+        return "Please enter a role title."
+      }
+      return true;
+    }
+  },
+  {
+    name: "salary",
+    type: "input",
+    message: "What is the salary for this role?",
+    validate: answer => {
+      if (answer.length < 1) {
+        return "Please enter a salary."
+      }
+      return true;
+    }
+  },
+  {
+    name: "department_id",
+    type: "input",
+    message: "What is the department ID for this role?",
+    validate: answer => {
+      if (answer.length < 1) {
+        return "Please enter a department ID."
+      }
+      return true;
+    }
+  }])
+    .then((answer) => {
+      const sql = `INSERT INTO role(title, salary, department_id) VALUES(?,?,?)`;
+      const params = [answer.title, answer.salary, answer.department_id];
+      db.query(sql, params, (err, results) => {
+        if (err) {
+          res.status(500).json({ error: err.message });
+          return;
+        }
+        console.log(`Role successfully added!`);
+        promptMain();
+      })
+    }
+    )
+};
 
+//Add an Employee
 
-// //Remove an Employee
+const addEmployee = () => {
+  inquirer.prompt([{
+    name: "first_name",
+    type: "input",
+    message: "What is the employee's first name?",
+    validate: answer => {
+      if (answer.length < 1) {
+        return "Please enter the person's first name."
+      }
+      return true;
+    }
+  },
+  {
+    name: "last_name",
+    type: "input",
+    message: "What is the employee's last name?",
+    validate: answer => {
+      if (answer.length < 1) {
+        return "Please enter the person's last name."
+      }
+      return true;
+    }
+  },
+  {
+    name: "role_id",
+    type: "input",
+    message: "What is the employee's role ID?",
+    validate: answer => {
+      if (answer.length < 1) {
+        return "Please enter a role ID."
+      }
+      return true;
+    }
+  },
+  {
+    name: "manager_id",
+    type: "input",
+    message: "What is the manager's ID?"
+  }])
+    .then((answer) => {
+      const sql = `INSERT INTO employee(first_name, last_name, role_id, manager_id) VALUES(?,?,?,?)`;
+      const params = [answer.first_name, answer.last_name, answer.role_id, answer.manager_id];
+      db.query(sql, params, (err, results) => {
+        if (err) {
+          res.status(500).json({ error: err.message });
+          return;
+        }
+        console.log(`Employee successfully added!`);
+        promptMain();
+      })
+    }
+    )
+};
 
-// //Update an Employee Role
+//Remove an Employee
+
+const removeEmployee = () => {
+  inquirer.prompt({
+    name: "id",
+    type: "input",
+    message: "What is ID of the employee you want to remove?"
+  })
+    .then((answer) => {
+      const sql = `DELETE FROM employee WHERE id = ?`;
+      const params = [answer.id];
+      db.query(sql, params, (err, results) => {
+        if (err) {
+          res.status(500).json({ error: err.message });
+          return;
+        }
+        console.log(`Employee successfully deleted!`);
+        promptMain();
+      })
+    }
+    )
+};
+
+//Update an Employee Role
+
+const updateEmployee = () => {
+  inquirer.prompt([{
+    name: "id",
+    type: "input",
+    message: "What is ID of the employee you want to update?"
+  },
+  {
+    name: "role_id",
+    type: "input",
+    message: "What is the employee's new role ID?",
+    validate: answer => {
+      if (answer.length < 1) {
+        return "Please enter a role ID."
+      }
+      return true;
+    }
+  }
+  ])
+    .then((answer) => {
+      const sql = `UPDATE employee SET role_id = ? 
+      WHERE id = ?`;
+      const params = [ answer.role_id, answer.id];
+      db.query(sql,params, (err, results) => {
+          if (err) {
+            res.status(500).json({ error: err.message });
+            return;
+          }
+          console.log(`Employee successfully updated!`);
+          promptMain();
+        })
+    }
+    )
+};
+
+promptMain();
