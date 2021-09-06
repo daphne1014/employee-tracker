@@ -19,9 +19,6 @@
   ## License
   The MIT License
 
-  ## Tests
-  N/A
-
   ## Questions
 
   Feel free to reach out to me on GitHub: [daphne1014](https://github.com/daphne1014).
