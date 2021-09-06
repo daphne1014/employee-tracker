@@ -7,6 +7,9 @@
   - [Installation](#installation)
   - [Contributing](#contributing)
 
+  ## Screenshot
+  ![walkthrough video](./public/assets/images/screenshot.gif?raw=true "A walkthrough video demonstrating the functionality of the application")
+  
   ## Installation
   npm i -y
 
