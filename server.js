@@ -22,7 +22,8 @@ const promptMain = () => {
       'Add a Role',
       'Add an Employee',
       'Remove an Employee',
-      'Update an Employee Role']
+      'Update an Employee Role',
+      'Done']
   })
     .then((answer) => {
       if (answer.main === 'View All Departments') {
@@ -41,6 +42,9 @@ const promptMain = () => {
         removeEmployee();
       } else if (answer.main === 'Update an Employee Role') {
         updateEmployee();
+      } else if (answer.main === 'Done') {
+        console.log("Good Bye!");
+        db.end();
       }
     })
 };
@@ -81,11 +85,11 @@ const viewRole = () => {
 
 const viewEmployee = () => {
   const sql = `SELECT
-  -> e.id, e.first_name, e.last_name, role.title, department.name, role.salary, concat(m.first_name, m.last_name) AS manager
-  -> FROM employee e
-  -> JOIN role ON e.role_id=role.id
-  -> JOIN department on role.department_id = department.id
-  -> JOIN employee m ON m.id = e.manager_id;`;
+   e.id, e.first_name, e.last_name, role.title, department.name, role.salary, concat(m.first_name, m.last_name) AS manager
+   FROM employee e
+  JOIN role ON e.role_id=role.id
+ JOIN department on role.department_id = department.id
+ JOIN employee m ON m.id = e.manager_id;`;
   db.query(sql, (err, results) => {
     if (err) {
       res.status(500).json({ error: err.message });
@@ -270,15 +274,15 @@ const updateEmployee = () => {
     .then((answer) => {
       const sql = `UPDATE employee SET role_id = ? 
       WHERE id = ?`;
-      const params = [ answer.role_id, answer.id];
-      db.query(sql,params, (err, results) => {
-          if (err) {
-            res.status(500).json({ error: err.message });
-            return;
-          }
-          console.log(`Employee successfully updated!`);
-          promptMain();
-        })
+      const params = [answer.role_id, answer.id];
+      db.query(sql, params, (err, results) => {
+        if (err) {
+          res.status(500).json({ error: err.message });
+          return;
+        }
+        console.log(`Employee successfully updated!`);
+        promptMain();
+      })
     }
     )
 };
