@@ -18,6 +18,7 @@ const promptMain = () => {
       'View All Departments',
       'View All Roles',
       'View All Employees',
+      'View All Employees with Manager',
       'Add a Department',
       'Add a Role',
       'Add an Employee',
@@ -32,6 +33,8 @@ const promptMain = () => {
         viewRole();
       } else if (answer.main === 'View All Employees') {
         viewEmployee();
+      } else if (answer.main === 'View All Employees with Manager') {
+        viewEmployeeWithManager();
       } else if (answer.main === 'Add a Department') {
         addDept();
       } else if (answer.main === 'Add a Role') {
@@ -84,6 +87,25 @@ const viewRole = () => {
 // //View All Employees
 
 const viewEmployee = () => {
+  const sql = `SELECT
+   employee.id, employee.first_name, employee.last_name, role.title, department.name, role.salary
+   FROM employee
+  JOIN role ON employee.role_id=role.id
+ JOIN department on role.department_id = department.id`;
+  db.query(sql, (err, results) => {
+    if (err) {
+      res.status(500).json({ error: err.message });
+      return;
+    }
+    console.table(results);
+    promptMain();
+  });
+};
+
+
+// //View All Employees with Manager
+
+const viewEmployeeWithManager = () => {
   const sql = `SELECT
    e.id, e.first_name, e.last_name, role.title, department.name, role.salary, concat(m.first_name, m.last_name) AS manager
    FROM employee e
